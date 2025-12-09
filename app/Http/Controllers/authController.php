@@ -24,19 +24,20 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Laravel\Socialite\Facades\Socialite;
-
 class authController extends Controller
 {
     //
     public function login(Request $request)
     {
         try {
-            $credentials = $request->validate([
-                'username' => "required|max:255",
+            // dd($request->all());
+
+            $user = $request->validate([
+                'email' => "required|email",
                 'password' => "required",
             ]);
 
-            $user = User::where("username", '=', $request->username)->first();
+            $user = User::where("email", '=', $request->email)->first();
             if (!$user) {
                 return response()->json([
                     "success" => false,
@@ -53,21 +54,21 @@ class authController extends Controller
             if (! Hash::check($request->password, $user->password)) {
                 return response()->json([
                     "success" => false,
-                    'message' => "password salah !"
+                    'message' => "password salah"
                 ], 422);
             }
             $user->tokens()->delete();
 
-
             $token = $user->createToken('auth_token')->plainTextToken;
-
+            $last_login = Carbon::now();
+            $user->update(['last_login' => $last_login]);
             return response()->json([
                 "success" => true,
                 "message" => "Login Berhasil",
                 "user" => $user,
                 "token" => $token,
             ], 200);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             //throw $th;
             return response()->json([
                 "message" => $e->getMessage()
@@ -79,35 +80,19 @@ class authController extends Controller
     {
         try {
             $request->validate([
-                'name' => "required|max:255",
-                'username' => "required|max:255",
-                'phone' => "required|max:13",
                 'email' => "required|email",
+                'username' => "required|max:255",
                 'password' => "required",
-                'password_confirmation' => "required",
             ]);
 
-            $user = User::where('email', '=', $request->email)->first();
-            $phone = User::where('phone', '=', $request->phone)->first();
+            $email = User::where('email', '=', $request->email)->first();
             $username = User::where('username', '=', $request->username)->first();
 
-            if ($user) {
+            if ($email) {
                 return response()->json([
                     "success" => false,
                     'message' => "email tersedia"
                 ], 422);
-            }
-            if ($phone) {
-                return response()->json([
-                    "success" => false,
-                    'message' => "No hp tersedia"
-                ], 422);
-            }
-            if ($phone) {
-                return response()->json([
-                    "success" => false,
-                    'message' => "No hp tersedia"
-                ]);
             }
             if ($username) {
                 return response()->json([
@@ -116,41 +101,59 @@ class authController extends Controller
                 ], 422);
             }
 
-            if ($request->password_confirmation == $request->password) {
+            // jika menggunakan password_confirmation
+            // if ($request->password_confirmation == $request->password) {
 
                 // ngirim link email
                 // Buat token verifikasi
-                $verificationToken = Str::random(60);
+                //$verificationToken = Str::random(60);
 
                 // Simpan token verifikasi di session sementara
-                Cache::put('register_' . $verificationToken, [
-                    'name' => $request->name,
+                // Cache::put('register_' . $verificationToken, [
+                //     'name' => $request->name,
+                //     'username' => $request->username,
+                //     'email' => $request->email,
+                //     'phone' => $request->phone,
+                //     'password' => Hash::make($request->password),
+                // ], now()->addMinutes(15));
+                User::create([
                     'username' => $request->username,
                     'email' => $request->email,
-                    'phone' => $request->phone,
                     'password' => Hash::make($request->password),
-                ], now()->addMinutes(15));
-
+                    'email_verified_at'=>Carbon::now()
+                ]);
                 // Buat URL verifikasi
-                $verificationUrl = route('insertRegister', ['token' => $verificationToken]);
+                // $verificationUrl = route('insertRegister', ['token' => $verificationToken]);
 
                 // Kirim email verifikasi
-                Mail::to($request->email)->send(new VerifyEmail($verificationUrl));
+                // Mail::to($request->email)->send(new VerifyEmail($verificationUrl));
+
+                // return response()->json([
+                //     "success" => true,
+                //     'message' => "Silakan cek email untuk verifikasi",
+                //     'data' => [
+                //         'user' => $request->all(),
+                //         'token' => $verificationToken
+                //     ]
+                // ], 200);
 
                 return response()->json([
                     "success" => true,
-                    'message' => "Silakan cek email untuk verifikasi",
+                    'message' => "Selamat datang! Silakan login.",
                     'data' => [
                         'user' => $request->all(),
-                        'token' => $verificationToken
+                        // 'token' => $verificationToken
                     ]
                 ], 200);
-            } else {
-                return response()->json([
-                    "success" => false,
-                    'message' => "password tidak sesuai"
-                ], 422);
-            }
+
+
+            // } else {
+    
+            //     return response()->json([
+            //         "success" => false,
+            //         'message' => "password tidak sesuai"
+            //     ], 422);
+            // }
         } catch (\Throwable $th) {
             //throw $th;
             return response()->json([
@@ -166,24 +169,36 @@ class authController extends Controller
             $registerData = Cache::get('register_' . $token);
             //dd($registerData);
             $insert = User::create([
-                'name' => $registerData['name'],
                 'username' => $registerData['username'],
                 'email' => $registerData['email'],
-                'phone' => $registerData['phone'],
                 'password' => $registerData['password'],
+
                 'email_verified_at' => Carbon::now(),
             ]);
             if ($insert) {
                 Cache::forget('register_' . $token);
                 $token = $insert->createToken('auth_token')->plainTextToken;
-                return view('notifEmail')->with(['success' => true]);
+
+                // return view('notifEmail')->with(['success' => true]);
+                return response()->json([
+                    "success" => true,
+                    'message' => "Registrasi berhasil",
+                    'user' => $insert,
+                    'token' => $token
+                ], 200);
             }
-            return view('notifEmail')->with(['success' => false]);
+            // return view('notifEmail')->with(['success' => false]);
         } catch (\Throwable $th) {
-            return view('notifEmail')->with([
-                "success" => false,
-                'message' => $th->getMessage()
-            ]);
+            // return view('notifEmail')->with([
+            //     "success" => false,
+            //     'message' => $th->getMessage()
+            // ]);
+                            return response()->json([
+                    "success" => true,
+                    'message' => "Registrasi berhasil",
+                    'user' => $insert,
+                    'token' => $token
+                ], 200);
         }
     }
 
@@ -201,25 +216,32 @@ class authController extends Controller
         $user = User::where('email', $request->email)->first();
 
         // Buat token reset password
-        $status = Password::createToken($user);
-
+        $token = Password::createToken($user);
         // Kirim email dengan notifikasi kustom
-        $user->notify(new ResetPasswordNotification($status));
+        $user->notify(new ResetPasswordNotification($token));
 
         return response()->json([
             'success' => true,
             'message' => 'Email reset password telah dikirim.',
         ], 200);
+        // $reset_url = url('https://londa-proinsurance-nonsalubriously.ngrok-free.dev/api/reset-password?token=' . $token . '?email=' . $user->email);
+        // return response()->json([
+        //     "success" => true,
+        //     "message" => "Link reset password berhasil dibuat",
+        //     "_token" => $token,
+        //     "reset_url" => $reset_url
+        // ]);
+        
     }
 
     public function resetPassword(Request $request)
     {
+        Log::info('Reset Password Request:', $request->all());
         try {
             //dd($request->all());
             $request->validate([
                 '_token' => 'required',
                 'email' => 'nullable|email|exists:app_users,email',
-                'phone' => 'nullable|exists:app_users,phone|numeric',
                 'password' => 'required',
                 'password_confirmation' => 'required',
             ]);
@@ -229,7 +251,7 @@ class authController extends Controller
                 return redirect()->back()->with('error', 'Password tidak sesuai');
             }
             $status = Password::reset(
-                $request->only('email', 'phone', 'password', 'password_confirmation', 'token'),
+                $request->only('email', 'password', 'password_confirmation', 'token'),
                 function (User $user, string $password) {
                     $user->forceFill([
                         'password' => Hash::make($password),

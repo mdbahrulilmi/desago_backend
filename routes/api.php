@@ -20,6 +20,7 @@ Route::middleware(['guest'])->group(function(){
 	Route::post('/login',[authController::class,'login'])->name('login');
 	Route::post('/register',[authController::class,'register'])->name('register');
 	Route::post('/forgot-password', [AuthController::class, 'sendResetLink'])->name('password.email');
+	Route::post('/reset-password', [AuthController::class, 'resetPassword'])->name('password.update');
 	Route::post('/loginGoogle',[authController::class,'googleLogin']);
 	Route::get('/auth/redirect', [authController::class,'redirect'])->name('redirect');
 	Route::get('/auth/{provider}/callback', [authController::class,'callback'])->name('callback');

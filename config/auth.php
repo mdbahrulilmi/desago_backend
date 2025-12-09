@@ -99,9 +99,11 @@ return [
     'passwords' => [
         'users' => [
             'provider' => 'users',
-            'table' => env('AUTH_PASSWORD_RESET_TOKEN_TABLE', 'app_password_reset_tokens'),
-            'expire' => 60,
-            'throttle' => 10,
+            'table' => env('AUTH_PASSWORD_RESET_TOKEN_TABLE', 'password_reset_tokens'),
+            'expire' => 120,
+            'throttle' => 60,
+            // 'expire' => 60,
+            // 'throttle' => 10,
             'url' => env('APP_URL') . '/reset-password',
         ],
     ],
