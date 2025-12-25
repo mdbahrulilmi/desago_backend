@@ -1,0 +1,14 @@
+[
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.desago.app",
+      "sha256_cert_fingerprints": [
+        "6D:37:9B:0A:D6:95:CC:81:47:EB:AB:A1:33:36:4E:FC:91:7D:76:FA:AF:E1:2B:5B:12:76:72:A1:39:9F:BA:FA"
+      ]
+    }
+  }
+]

@@ -97,4 +97,33 @@ class DesaController extends Controller
             ], 500);
         }
     }
+    /**
+     * Memunculkan Profil Desa
+     */
+    
+    //  Public function profilDesa($id): JsonResponse
+    //  {
+    //      try {
+    //          $desa = AkunDesa::with('profilDesa')->where('id', $id)->first();
+ 
+    //          if (!$desa) {
+    //              return response()->json([
+    //                  'success' => false,
+    //                  'message' => 'Desa tidak ditemukan'
+    //              ], 404);
+    //          }
+ 
+    //          return response()->json([
+    //              'success' => true,
+    //              'message' => 'Profil desa berhasil dimuat',
+    //              'data' => $desa->profilDesa
+    //          ]);
+    //      } catch (\Exception $e) {
+    //          Log::error('Error fetching desa profile: ' . $e->getMessage());
+    //          return response()->json([
+    //              'success' => false,
+    //              'message' => 'Gagal memuat profil desa'
+    //          ], 500);
+    //      }
+    //  }
 }
