@@ -338,6 +338,5 @@ INSERT INTO `app_migrations` (`id`, `migration`, `batch`) VALUES (13,'2025_02_28
 INSERT INTO `app_migrations` (`id`, `migration`, `batch`) VALUES (14,'2025_02_28_032618_create_app_biodata_user_table',1);
 INSERT INTO `app_migrations` (`id`, `migration`, `batch`) VALUES (15,'2025_03_01_185106_update_field_default_nullable_from_app_biodata_user_table',1);
 INSERT INTO `app_migrations` (`id`, `migration`, `batch`) VALUES (16,'2025_12_08_062322_create_users_table',1);
-INSERT INTO `app_migrations` (`id`, `migration`, `batch`) VALUES (17,'2025_12_08_074759_create_app_password_reset_tokens_table',1);
 INSERT INTO `app_migrations` (`id`, `migration`, `batch`) VALUES (18,'2025_12_08_084046_update_default_nullable_name_users_table',1);
 INSERT INTO `app_migrations` (`id`, `migration`, `batch`) VALUES (19,'2025_12_10_131538_add_remember_token_to_users_table',2);

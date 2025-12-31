@@ -1,12 +1,15 @@
 <?php
-
+// mobile
 use App\Http\Controllers\authController;
 use App\Http\Controllers\DesaController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TautkanAkunController;
 use App\Http\Controllers\AssetLinksController;
-use App\Http\Middleware\pemilikProfile;
 use App\Http\Controllers\FileUploadController;
+// web
+use App\Http\Controllers\web\AuthControllerWeb;
+use App\Http\Middleware\pemilikProfile;
+
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 //test mail
@@ -35,24 +38,30 @@ Route::middleware(['guest'])->group(function(){
 
 	//testing mail
 
-	Route::get('/preview-email', function () {
+	// Route::get('/preview-email', function () {
 	
-		$resetUrl = 'http://londa-proinsurance-nonsalubriously.ngrok-free.dev/reset-password?token=50d7efde1414c0dd6956c9bf6da87e99635b6bba3b3dd245c633459ffec39802&email=sunankarebet@gmail.com';
+	// 	$resetUrl = 'http://londa-proinsurance-nonsalubriously.ngrok-free.dev/reset-password?token=50d7efde1414c0dd6956c9bf6da87e99635b6bba3b3dd245c633459ffec39802&email=sunankarebet@gmail.com';
 	
-		$mailMessage = (new MailMessage)
-			->subject('Reset Kata Sandi - DesaGO')
-			->greeting('Halo Bilqis !')
-			->line('Klik tombol di bawah untuk reset kata sandi')
-			->action('Reset Kata Sandi', $resetUrl)
-			->line('Tautan ini akan kedaluwarsa dalam 60 menit.')
-			->line('Jika Anda tidak meminta reset kata sandi, abaikan email ini.')
-			->salutation('Tim DesaGO');
+	// 	$mailMessage = (new MailMessage)
+	// 		->subject('Reset Kata Sandi - DesaGO')
+	// 		->greeting('Halo Bilqis !')
+	// 		->line('Klik tombol di bawah untuk reset kata sandi')
+	// 		->action('Reset Kata Sandi', $resetUrl)
+	// 		->line('Tautan ini akan kedaluwarsa dalam 60 menit.')
+	// 		->line('Jika Anda tidak meminta reset kata sandi, abaikan email ini.')
+	// 		->salutation('Tim DesaGO');
 	
-		return $mailMessage->render();
-	});
+	// 	return $mailMessage->render();
+	// });
 	
+// for web
+Route::prefix('desa')->group(function () {
 
+    Route::post('/login', [AuthControllerWeb::class, 'login'])->name('desa.login');
 
+    Route::post('/register', [AuthControllerWeb::class, 'register'])->name('desa.register');
+
+});
 
 });
 
@@ -60,7 +69,7 @@ Route::middleware(['guest'])->group(function(){
 Route::middleware(['auth:sanctum'])->group(function(){
 	Route::post('/logout',[authController::class,'logout'])->name('logout');
 	Route::get('/desa', [DesaController::class, 'getAllDataDesa']);
-	Route::get('/profile-desa/{id}', [DesaController::class, 'show']);
+	Route::get('/profil-desa/{id}', [DesaController::class, 'show']);
 	Route::post('/tautkan-akun', [TautkanAkunController::class, 'tautkanAkunUserKeDesa']);
 	Route::post('/user/avatar', [ProfileController::class, 'updateAvatar']);
 	Route::post('/edit/profile/{id}', [ProfileController::class, 'edit_profile'])->name('edit_profile')->middleware('pemilikProfile');
