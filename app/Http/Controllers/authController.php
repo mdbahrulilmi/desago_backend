@@ -135,13 +135,10 @@ class authController extends Controller
                     "success" => true,
                     'message' => "Silakan cek email untuk verifikasi",
                     'data' => [
-<<<<<<< HEAD
                         'user' => "OK",
                         // 'token' => $verificationToken
-=======
                         'user' => $request->all(),
                         'token' => $verificationToken
->>>>>>> ed5daddf80fc95f3859b53cc2a66c90cd9ec5492
                     ]
                 ], 200);
 
