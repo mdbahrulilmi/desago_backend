@@ -20,64 +20,80 @@ class ProfileController extends Controller
     {
         try {
             $request->validate([
-                'name' => "required|max:255",
-                'username' => "required|max:255",
-                'phone' => "required|max:13",
-                'email' => "required|email",
+                'email' => 'required|email',
+                'phone' => 'required|max:13',
             ]);
-            $user = User::where("email", '=', $request->email)->first();
-            //dd($request->email);
-
-            if ($user->username != $request->username) {
-                $cekUser = User::where("username", '=', $request->username)->where("id", '!=', $user->id)->first();
-                if ($cekUser) {
+        
+            $user = auth()->user(); // ambil user login
+        
+            if (!$user) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'User tidak ditemukan'
+                ], 404);
+            }
+        
+            // otomatis ubah ke +62 kalau nomor mulai dengan 0
+            $phone = $request->phone;
+            if (substr($phone, 0, 1) === '0') {
+                $phone = '+62' . substr($phone, 1);
+            }
+        
+            // cek username unik
+            if ($request->username !== $user->username) {
+                $cekUsername = User::where('username', $request->username)
+                    ->where('id', '!=', $user->id)
+                    ->exists();
+        
+                if ($cekUsername) {
                     return response()->json([
-                        "success" => false,
-                        "message" => "Username telah digunakan"
-                    ], 442);
+                        'success' => false,
+                        'message' => 'Username telah digunakan'
+                    ], 422);
                 }
             }
-            if ($user->phone != $request->phone) {
-                $cekUser = User::where("phone", '=', $request->phone)->where("id", '!=', $user->id)->first();
-                if ($cekUser) {
+        
+            // cek phone unik
+            if ($phone !== $user->phone) {
+                $cekPhone = User::where('phone', $phone)
+                    ->where('id', '!=', $user->id)
+                    ->exists();
+        
+                if ($cekPhone) {
                     return response()->json([
-                        "success" => false,
-                        "message" => "Nomor HP telah digunakan"
-                    ], 442);
+                        'success' => false,
+                        'message' => 'Nomor HP telah digunakan'
+                    ], 422);
                 }
             }
-
-            // email tidak diupdate karna email udah pasti sama ( di front end di disable edit email )
-            $updateUser = DB::table('app_users')->where("id", '=', $user->id)->update([
-                "name" => $request->name,
-                "phone" => $request->phone,
-                "username" => $request->username,
+        
+            // update user
+            $user->update([
+                'email' => $request->email,
+                'phone' => $phone,
             ]);
-
-            if ($updateUser) {
-                return response()->json([
-                    "success" => true,
-                    "message" => "Berhasil mengubah profile",
-                    'data' => $request->all()
-                ], 201);
-            } else {
-                return response()->json([
-                    "success" => false,
-                    "message" => "Gagal mengubah profile",
-                ], 442);
-            }
+        
+            return response()->json([
+                'success' => true,
+                'message' => 'Berhasil mengubah profil',
+                'data' => $user
+            ], 200);
+        
         } catch (\Throwable $th) {
-            //throw $th;
-            return $th->getMessage();
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan server',
+                'error' => $th->getMessage()
+            ], 500);
         }
     }
     
     public function updateAvatar(Request $request)
     {
         try {
-            // 1. Fail fast: validasi ringan
+            // 1. Validasi file
             Validator::make($request->all(), [
-                'avatar' => 'required|image|mimes:jpeg,png,jpg,webp|max:1024', // 1MB
+                'avatar' => 'required|image|mimes:jpeg,png,jpg,webp|max:1024', // max 1MB
             ])->validate();
     
             // 2. Auth check
@@ -89,33 +105,28 @@ class ProfileController extends Controller
                 ], 401);
             }
     
-            // 3. Resize & kompres gambar (hemat bandwidth)
-            $manager = new ImageManager(new Driver());
+            // 3. Ambil file avatar
+            $file = $request->file('avatar');
     
-            $image = $manager
-                ->read($request->file('avatar'))
-                ->cover(256, 256)     // ukuran lebih kecil
-                ->toWebp(60);         // kompres lebih agresif
+            // 4. Buat nama file unik
+            $filename = 'avatar_' . $user->id . '_' . time() . '.' . $file->getClientOriginalExtension();
     
-            // 4. Path final
-            $finalPath = 'avatar/avatar_' . $user->id . '_' . time() . '.webp';
+            // 5. Simpan di folder public/avatar
+            $file->move(public_path('avatar'), $filename);
     
-            // 5. Upload langsung ke Supabase (tanpa tmp file)
-            Storage::disk('supabase')->put(
-                $finalPath,
-                (string) $image,
-                'public'
-            );
+            $finalPath = 'avatar/' . $filename;
     
-            // 6. Hapus avatar lama SETELAH upload sukses
-            if ($user->avatar && Storage::disk('supabase')->exists($user->avatar)) {
-                Storage::disk('supabase')->delete($user->avatar);
+            // 6. Hapus avatar lama kalau ada
+            if ($user->avatar && file_exists(public_path($user->avatar))) {
+                unlink(public_path($user->avatar));
             }
-
+    
             // 7. Update user
             $user->avatar = $finalPath;
             $user->save();
-                if (method_exists($user, 'socialAccounts')) {
+    
+            // 8. Update social account kalau ada
+            if (method_exists($user, 'socialAccounts')) {
                 $socialAccounts = $user->socialAccounts;
                 if ($socialAccounts) {
                     $user->socialAccounts()->update([
@@ -123,7 +134,8 @@ class ProfileController extends Controller
                     ]);
                 }
             }
-            // 8. Response
+    
+            // 9. Response
             return response()->json([
                 'status' => true,
                 'message' => 'Berhasil mengubah avatar',
@@ -148,5 +160,6 @@ class ProfileController extends Controller
             ], 500);
         }
     }
+
     
 }

@@ -31,28 +31,6 @@ Route::middleware(['guest'])->group(function(){
 	Route::get('/sendSMS', [authController::class, 'sendMessage']);
 	Route::post('/new-password', [authController::class, 'resetPassword'])->name('password.update');
 	Route::post('/token-expired', [authController::class, 'tokenExpired']);
-	// Route::post('/new-password', function(Request $request) {
-	// return $request->all();
-	// })->name('password.update');
-	// Desa Endpoint
-
-	//testing mail
-
-	// Route::get('/preview-email', function () {
-	
-	// 	$resetUrl = 'http://londa-proinsurance-nonsalubriously.ngrok-free.dev/reset-password?token=50d7efde1414c0dd6956c9bf6da87e99635b6bba3b3dd245c633459ffec39802&email=sunankarebet@gmail.com';
-	
-	// 	$mailMessage = (new MailMessage)
-	// 		->subject('Reset Kata Sandi - DesaGO')
-	// 		->greeting('Halo Bilqis !')
-	// 		->line('Klik tombol di bawah untuk reset kata sandi')
-	// 		->action('Reset Kata Sandi', $resetUrl)
-	// 		->line('Tautan ini akan kedaluwarsa dalam 60 menit.')
-	// 		->line('Jika Anda tidak meminta reset kata sandi, abaikan email ini.')
-	// 		->salutation('Tim DesaGO');
-	
-	// 	return $mailMessage->render();
-	// });
 	
 // for web
 Route::prefix('desa')->group(function () {
@@ -72,7 +50,8 @@ Route::middleware(['auth:sanctum'])->group(function(){
 	Route::get('/profil-desa/{id}', [DesaController::class, 'show']);
 	Route::post('/tautkan-akun', [TautkanAkunController::class, 'tautkanAkunUserKeDesa']);
 	Route::post('/user/avatar', [ProfileController::class, 'updateAvatar']);
-	Route::post('/edit/profile/{id}', [ProfileController::class, 'edit_profile'])->name('edit_profile')->middleware('pemilikProfile');
+	Route::post('/edit/profile', [ProfileController::class, 'edit_profile'])
+    ->middleware('auth:sanctum');
 	Route::post('/change-password', [authController::class, 'changePassword'])->name('change_password');
 	Route::post('/file-upload', [FileUploadController::class, 'upload'])->name('upload');
 	Route::get('/file-retrieve', [FileUploadController::class, 'retrieve'])->name('retrieve');
