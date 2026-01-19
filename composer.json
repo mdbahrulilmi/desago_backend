@@ -12,11 +12,13 @@
         "php": "^8.2",
         "azishapidin/indoregion": "^3.0",
         "guzzlehttp/guzzle": "^7.9",
+        "intervention/image": "^3.11",
         "kreait/laravel-firebase": "^5.10",
         "laravel/framework": "^11.31",
         "laravel/sanctum": "^4.0",
         "laravel/socialite": "^5.17",
         "laravel/tinker": "^2.9",
+        "league/flysystem-aws-s3-v3": "^3.30",
         "twilio/sdk": "^8.3"
     },
     "require-dev": {
