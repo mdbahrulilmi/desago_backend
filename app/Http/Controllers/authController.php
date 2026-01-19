@@ -141,7 +141,7 @@ class authController extends Controller
                     "success" => true,
                     'message' => "Selamat datang! Silakan login.",
                     'data' => [
-                        'user' => $request->all(),
+                        'user' => "OK",
                         // 'token' => $verificationToken
                     ]
                 ], 200);
