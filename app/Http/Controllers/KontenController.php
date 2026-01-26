@@ -2,33 +2,50 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\SambutanDesa;
-use App\Models\KepalaDesa;
-use App\Models\ApbdPendapatan;
-use App\Models\ApbdBelanja;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
+use App\Models\BeritaDesa;
+use App\Models\AgendaDesa;
+use App\Models\CarouselDesa;
 
-class DesaController extends Controller
+class KontenController extends Controller
 {
-    /**
-     * Mendapatkan daftar semua desa beserta profilnya
-     */
-    public function index($subdomain)
+    public function carousel($subdomain)
     {
-        $data = SambutanDesa::where('subdomain', $subdomain)
-            ->where('publish', 1)
-            ->with(['kepalaDesa','informasiDesa','perangkatDesa'])
-            ->latest('tgl')
-            ->firstOrFail();
-            
-            
-        $data->isi = $this->cleanHtml($data->isi);
-        
+        $data = CarouselDesa::where('subdomain', $subdomain)
+        ->orderBy('no', 'asc')
+        ->get();
+
         return response()->json($data);
     }
-
+    public function berita($subdomain)
+    {
+        $data = BeritaDesa::where('subdomain', $subdomain)
+            ->with('userDesa')
+            ->latest('tgl')
+            ->paginate(7)
+            ->transform(function ($item) {
+                $item->isi = $this->cleanHtml($item->isi);
+                return $item;
+            });
+            
+        return response()->json($data);
+    }
+    
+    public function beritaCarousel($subdomain)
+    {
+        $data = BeritaDesa::where('subdomain', $subdomain)
+            ->with('userDesa')
+            ->latest('tgl')
+            ->limit(5)
+            ->get()
+            ->transform(function ($item) {
+                $item->isi = $this->cleanHtml($item->isi);
+                return $item;
+            });
+            
+        return response()->json($data);
+    }
+    
     private function cleanHtml(?string $html): string
     {
         if (!$html) {
@@ -67,20 +84,13 @@ class DesaController extends Controller
         return trim($html);
     }
     
-    public function danaDesa($subdomain){
-        $dataBelanja = ApbdBelanja::where('subdomain', $subdomain)
+    public function agenda($subdomain)
+    {
+        $data = AgendaDesa::where('subdomain', $subdomain)
+            ->with('kategori')
             ->get();
-        $dataPendapatan = ApbdPendapatan::where('subdomain', $subdomain)
-            ->get();
-        
-        return response()->json([
-        'dana_desa' => [
-            'pendapatan' => $dataPendapatan,
-            'belanja' => $dataBelanja,
-        ]
-    ]);
+            
+        return response()->json($data);
     }
-
-
 
 }

@@ -1,7 +1,11 @@
 <?php
 // mobile
 use App\Http\Controllers\authController;
+use App\Http\Controllers\UMKMController;
+use App\Http\Controllers\NoDaruratController;
+use App\Http\Controllers\LaporController;
 use App\Http\Controllers\DesaController;
+use App\Http\Controllers\KontenController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TautkanAkunController;
 use App\Http\Controllers\AssetLinksController;
@@ -18,6 +22,27 @@ use Illuminate\Notifications\Messages\MailMessage;
 //Route::get('/user', function (Request $request) {
 //    return $request->user();
 //})->middleware('auth:sanctum');
+Route::prefix('/desa/{subdomain}')->group(function(){
+    Route::get('/profil/', [DesaController::class, 'index']);
+
+    Route::get('/carousel/', [KontenController::class, 'carousel']);
+    Route::get('/agenda/', [KontenController::class, 'agenda']);
+    Route::get('/berita/', [KontenController::class, 'berita']);
+    Route::get('/berita/carousel', [KontenController::class, 'beritaCarousel']);
+    Route::get('/berita/{id}', [KontenController::class, 'berita_detail']);
+    Route::get('/dana/', [DesaController::class, 'danaDesa']);
+    Route::get('/umkm/', [UMKMController::class, 'index']);
+    Route::get('/umkm/carousel', [UMKMController::class, 'carousel']);
+    Route::get('/no-darurat', [NoDaruratController::class, 'index']);
+    
+    Route::prefix('/lapor/')->group(function(){
+        Route::get('/', [LaporController::class, 'index']);
+        Route::get('/kategori', [LaporController::class, 'category']);
+        Route::post('/create', [LaporController::class, 'store']);
+});
+
+});
+
 
 Route::middleware(['guest'])->group(function(){
 
@@ -31,6 +56,8 @@ Route::middleware(['guest'])->group(function(){
 	Route::get('/sendSMS', [authController::class, 'sendMessage']);
 	Route::post('/new-password', [authController::class, 'resetPassword'])->name('password.update');
 	Route::post('/token-expired', [authController::class, 'tokenExpired']);
+	
+	
 	
 // for web
 Route::prefix('desa')->group(function () {

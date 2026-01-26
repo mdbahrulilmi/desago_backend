@@ -61,6 +61,17 @@ return [
                 PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
             ]) : [],
         ],
+        
+        'desa' => [
+            'driver' => 'mysql',
+            'host' => env('DB_DESA_HOST'),
+            'port' => env('DB_DESA_PORT'),
+            'database' => env('DB_DESA_DATABASE'),
+            'username' => env('DB_DESA_USERNAME'),
+            'password' => env('DB_DESA_PASSWORD'),
+            'charset' => 'utf8mb4',
+            'collation' => 'utf8mb4_unicode_ci',
+        ],
 
         'mariadb' => [
             'driver' => 'mariadb',
