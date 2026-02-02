@@ -4,6 +4,7 @@ use App\Http\Controllers\authController;
 use App\Http\Controllers\UMKMController;
 use App\Http\Controllers\NoDaruratController;
 use App\Http\Controllers\LaporController;
+use App\Http\Controllers\SuratController;
 use App\Http\Controllers\DesaController;
 use App\Http\Controllers\KontenController;
 use App\Http\Controllers\ProfileController;
@@ -40,6 +41,9 @@ Route::prefix('/desa/{subdomain}')->group(function(){
         Route::get('/kategori', [LaporController::class, 'category']);
         Route::post('/create', [LaporController::class, 'store']);
 });
+    Route::get('/surat', [SuratController::class, 'index']);
+    Route::post('/surat/create', [SuratController::class, 'store']);
+    Route::get('/surat/riwayat/{id}', [SuratController::class, 'riwayat']);
 
 });
 

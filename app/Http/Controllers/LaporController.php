@@ -13,6 +13,7 @@ class LaporController extends Controller
     public function index($subdomain){
         $data = Lapor::where('subdomain', $subdomain)
         ->with("kategori")
+        ->latest('created_at')
         ->paginate(10);
         
         return response()->json($data);
